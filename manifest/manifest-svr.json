@@ -1,0 +1,31 @@
+{
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "type": "APP",
+  "name": {
+    "ja": "【svr】Gemini API Plugin",
+    "en": "svr Gemini API Plugin"
+  },
+  "description": {
+    "ja": "Gemini API 連携プラグインです。使用しているモデルは、gemini-2.5-flash-liteです。",
+    "en": "This is a plugin that links with the Gemini API. The model used is gemini-2.5-flash-lite."
+  },
+  "homepage_url": {
+    "ja": "https://hazime-style.com",
+    "en": "https://hazime-style.com"
+  },
+  "icon": "plugin-icon.png",
+  "desktop": {
+    "js": ["https://127.0.0.1:5500/plugin-src/svr/index.js"],
+    "css": ["https://127.0.0.1:5500/plugin-src/svr/main.css"]
+  },
+  "mobile": {
+    "js": ["https://127.0.0.1:5500/plugin-src/svr/index.js"],
+    "css": ["https://127.0.0.1:5500/plugin-src/svr/main.css"]
+  },
+  "config": {
+    "html": "config/config.html",
+    "js": ["https://127.0.0.1:5500/plugin-src/svr/config/config.js"],
+    "css": ["https://127.0.0.1:5500/plugin-src/svr/config/config.css"]
+  }
+}

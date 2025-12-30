@@ -1,0 +1,22 @@
+// Main styles
+@use 'sass:color';
+
+$primary-color: #3498db;
+$secondary-color: #2ecc71;
+$tertiary-color: #f39c12;
+$danger-color: #e74c3c;
+
+.hazime-gemini-plugin-execute-button {
+  --kuc-button-background-color: #{$secondary-color};
+  --kuc-button-background-color-hover: #{color.scale($secondary-color, $lightness: -10%)};
+  --kuc-button-background-color-active: #{color.scale($secondary-color, $lightness: -15%)};
+  --kuc-button-background-color-focus: #{color.scale($secondary-color, $lightness: -10%)};
+  --kuc-button-text-color: #ffffff;
+}
+
+.hazime-gemini-plugin-execute-mobile-button {
+  --kuc-mobile-button-background-color: #{$secondary-color};
+  --kuc-mobile-button-background-color-active: #{color.scale($secondary-color, $lightness: -15%)};
+  --kuc-mobile-button-background-color-focus: #{color.scale($secondary-color, $lightness: -10%)};
+  --kuc-mobile-button-text-color: #ffffff;
+}
