@@ -67,6 +67,15 @@ import * as func from './func';
 
     divContent?.appendChild(func.createMarginTopElement());
 
+    const buttonLabel = new Text({
+      label: 'ボタンラベル ※ボタンに表示するテキストを設定します',
+      value: config.buttonLabel || 'Geminiにレビューを依頼',
+      className: 'hazime-gemini-plugin-text-m'
+    });
+    divContent?.appendChild(buttonLabel);
+
+    divContent?.appendChild(func.createMarginTopElement());
+
     // プロンプト
     const prompt = new TextArea({
       label: '共通のプロンプト',
@@ -118,6 +127,7 @@ import * as func from './func';
           try {
             const newConfig = {
               spaceFieldCode: spaceFieldCode.value,
+              buttonLabel: buttonLabel.value,
               prompt: prompt.value,
               inputFieldCode: inputFieldCode.value,
               outputFieldCode: outputFieldCode.value

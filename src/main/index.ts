@@ -20,14 +20,14 @@ import * as func from './func';
       let button: Button | MobileButton;
       if (isMobile) {
         button = new MobileButton({
-          text: config.buttonLabel || 'Gemini API実行',
+          text: config.buttonLabel || 'Geminiにレビューを依頼',
           className: 'hazime-gemini-plugin-execute-mobile-button'
         });
         button.style.margin = '10px';
         kintone.mobile.app.record.getSpaceElement(config.spaceFieldCode)?.appendChild(button);
       } else {
         button = new Button({
-          text: config.buttonLabel || 'Gemini API実行',
+          text: config.buttonLabel || 'Geminiにレビューを依頼',
           className: 'hazime-gemini-plugin-execute-button'
         });
         kintone.app.record.getSpaceElement(config.spaceFieldCode)?.appendChild(button);
@@ -90,7 +90,8 @@ import * as func from './func';
 
             new Notification({
               text: 'Gemini APIの実行が完了しました',
-              type: 'success'
+              type: 'success',
+              duration: 2000
             }).open();
           } else {
             throw new Error(`API呼び出しエラー: ステータス ${status}`);
