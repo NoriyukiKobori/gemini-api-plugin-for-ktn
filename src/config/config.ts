@@ -1,4 +1,4 @@
-import { Text, TextArea, Button, Notification, Spinner } from 'kintone-ui-component';
+import { Text, TextArea, Table, RadioButton, Button, Notification, Spinner } from 'kintone-ui-component';
 import './config.scss';
 import * as func from './func';
 
@@ -37,7 +37,8 @@ import * as func from './func';
       label: 'API Key',
       value: apiKeyValue,
       visible: false,
-      className: 'hazime-gemini-plugin-text-l'
+      className: 'hazime-gemini-plugin-text-l',
+      requiredIcon: true
     });
     // apiKey.valueが空文字の場合は表示にする
     if (apiKey.value === '') {
@@ -61,7 +62,8 @@ import * as func from './func';
     const spaceFieldCode = new Text({
       label: 'スペースフィールドコード ※このスペースフィールドへボタンを表示します',
       value: config.spaceFieldCode || '',
-      className: 'hazime-gemini-plugin-text-m'
+      className: 'hazime-gemini-plugin-text-m',
+      requiredIcon: true
     });
     divContent?.appendChild(spaceFieldCode);
 
@@ -70,7 +72,8 @@ import * as func from './func';
     const buttonLabel = new Text({
       label: 'ボタンラベル ※ボタンに表示するテキストを設定します',
       value: config.buttonLabel || 'Geminiにレビューを依頼',
-      className: 'hazime-gemini-plugin-text-m'
+      className: 'hazime-gemini-plugin-text-m',
+      requiredIcon: true
     });
     divContent?.appendChild(buttonLabel);
 
@@ -88,19 +91,59 @@ import * as func from './func';
 
     divContent?.appendChild(func.createMarginTopElement());
 
-    const inputFieldCode = new Text({
-      label: '入力フィールドコード ※このフィールドの内容がプロンプトに追加されます',
-      value: config.inputFieldCode || '',
-      className: 'hazime-gemini-plugin-text-m'
+    const renderType = (type: string) => {
+      const typeInput = new RadioButton({
+        items: [
+          { label: '追加テキスト', value: 'additionalText' },
+          { label: 'フィールドコード', value: 'fieldCode' }
+        ],
+        value: type,
+        itemLayout: 'vertical',
+        className: 'hazime-gemini-plugin-radio-button-m'
+      });
+      return typeInput;
+    };
+
+    const renderKeyword = (keyword: string) => {
+      const keywordInput = new Text({
+        value: keyword,
+        className: 'hazime-gemini-plugin-text-m'
+      });
+      return keywordInput;
+    };
+
+    const inputFieldsTable = new Table({
+      label: '入力フィールドコードと追加テキスト ※各行の内容がプロンプトに追加されます',
+      columns: [
+        {
+          title: '区分',
+          field: 'type',
+          render: renderType,
+          requiredIcon: true
+        },
+        {
+          title: 'フィールドコードまたは追加テキスト',
+          field: 'keyword',
+          render: renderKeyword,
+          requiredIcon: true
+        }
+      ],
+      data: config.inputFieldsTable ? JSON.parse(config.inputFieldsTable) : [{ type: '', keyword: '' }],
+      actionButton: true,
+      headerVisible: true,
+      visible: true,
+      actionButtonPosition: 'left'
     });
-    divContent?.appendChild(inputFieldCode);
+
+    divContent?.appendChild(inputFieldsTable);
 
     divContent?.appendChild(func.createMarginTopElement());
 
     const outputFieldCode = new Text({
       label: '出力フィールドコード ※このフィールドにAIの応答がセットされます',
       value: config.outputFieldCode || '',
-      className: 'hazime-gemini-plugin-text-m'
+      className: 'hazime-gemini-plugin-text-m',
+      requiredIcon: true
     });
     divContent?.appendChild(outputFieldCode);
 
@@ -129,7 +172,7 @@ import * as func from './func';
               spaceFieldCode: spaceFieldCode.value,
               buttonLabel: buttonLabel.value,
               prompt: prompt.value,
-              inputFieldCode: inputFieldCode.value,
+              inputFieldsTable: JSON.stringify(inputFieldsTable.data),
               outputFieldCode: outputFieldCode.value
             };
 
@@ -153,8 +196,28 @@ import * as func from './func';
           }
         };
 
-        if (apiKey.value === '') {
-          alert('未入力項目があります。');
+        // 必須項目のチェック
+        let errorMessage = '';
+        if (!apiKey.value) errorMessage += '・API Keyが未設定です。\n';
+        if (!spaceFieldCode.value) errorMessage += '・スペースフィールドコードが未設定です。\n';
+        if (!buttonLabel.value) errorMessage += '・ボタンラベルが未設定です。\n';
+        if (inputFieldsTable.data.length === 0) {
+          errorMessage += '・入力フィールドコードと追加テキストが未設定です。\n';
+        } else {
+          (inputFieldsTable.data as Array<{ type?: string; keyword?: string }>).forEach((row, index) => {
+            if (!row.type) errorMessage += `・入力フィールドコードと追加テキストの${index + 1}行目: 区分が未選択です。\n`;
+            if (!row.keyword)
+              errorMessage += `・入力フィールドコードと追加テキストの${index + 1}行目: フィールドコードまたは追加テキストが未入力です。\n`;
+          });
+        }
+        if (!outputFieldCode.value) errorMessage += '・出力フィールドコードが未設定です。\n';
+
+        if (errorMessage) {
+          new Notification({
+            text: errorMessage,
+            type: 'danger'
+          }).open();
+          spinner.close();
           return;
         }
         spinner.open();

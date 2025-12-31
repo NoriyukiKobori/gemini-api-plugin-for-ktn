@@ -20,3 +20,12 @@ $danger-color: #e74c3c;
   --kuc-mobile-button-background-color-focus: #{color.scale($secondary-color, $lightness: -10%)};
   --kuc-mobile-button-text-color: #ffffff;
 }
+
+.hazime-gemini-plugin-textarea-l {
+  --kuc-textarea-input-width: 100%;
+  --kuc-textarea-input-height: 250px;
+}
+
+.hazime-gemini-plugin-ai-input-dialog {
+  --kuc-dialog-max-width: 100%;
+}

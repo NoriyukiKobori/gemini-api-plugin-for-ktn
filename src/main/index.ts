@@ -34,77 +34,100 @@ import * as func from './func';
       }
 
       button.addEventListener('click', async () => {
-        const record = isMobile ? kintone.mobile.app.record.get() : kintone.app.record.get();
-        const inputFieldValue = record.record[config.inputFieldCode]?.value || '';
-        console.log('inputFieldValue:', inputFieldValue);
-
-        if (!inputFieldValue) {
-          new Notification({
-            text: `入力フィールド(${config.inputFieldCode})が空です`,
-            type: 'danger'
-          }).open();
-          return;
-        }
-
-        const isConfirmed = await func.showAiConfirm();
-        if (!isConfirmed) {
-          return;
-        }
-
-        const prompt = config.prompt + '\n' + inputFieldValue;
-        console.log('prompt:', prompt);
-        const spinner = new Spinner({
-          text: 'Gemini APIを実行中...'
-        });
-        spinner.open();
         try {
-          const body = {
-            contents: [
-              {
-                parts: [
-                  {
-                    text: prompt
-                  }
-                ]
-              }
-            ]
-          };
-          const response = await kintone.plugin.app.proxy(PLUGIN_ID, apiUrl, method, {}, body);
-          const [responseBody, status, headers] = response;
-
-          console.log('Status:', status);
-          console.log('Headers:', headers);
-          console.log('Body:', responseBody);
-
-          if (status === 200) {
-            const result = JSON.parse(responseBody);
-            const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || 'レスポンスがありませんでした';
-
-            // 出力フィールドに結果をセット
-            record.record[config.outputFieldCode].value = generatedText;
-            if (isMobile) {
-              kintone.mobile.app.record.set(record);
-            } else {
-              kintone.app.record.set(record);
-            }
-
+          const record = isMobile ? kintone.mobile.app.record.get() : kintone.app.record.get();
+          const inputFieldsTable = config.inputFieldsTable ? JSON.parse(config.inputFieldsTable) : [];
+          if (inputFieldsTable.length === 0) {
             new Notification({
-              text: 'Gemini APIの実行が完了しました',
-              type: 'success',
-              duration: 2000
+              text: '入力フィールドが設定されていません',
+              type: 'danger'
             }).open();
-          } else {
-            throw new Error(`API呼び出しエラー: ステータス ${status}`);
+            return;
           }
 
-          spinner.close();
+          console.log(inputFieldsTable);
+
+          let prePrompt = config.prompt || '';
+          (inputFieldsTable as Array<{ type?: string; keyword?: string }>).forEach((item) => {
+            if (item.type === 'fieldCode') {
+              prePrompt += `\n${record.record[item.keyword || ''].value || ''}`;
+            } else if (item.type === 'additionalText') {
+              prePrompt += `\n${item.keyword || ''}`;
+            } else {
+              console.warn('Unknown item type:', item);
+            }
+          });
+          console.log('prePrompt:', prePrompt);
+
+          const prompt = await func.showAiInputDialog(prePrompt, isMobile);
+          console.log('prompt:', prompt);
+          if (prompt === null) {
+            return;
+          }
+          if (prompt === '') {
+            new Notification({
+              text: 'プロンプトが空です',
+              type: 'danger'
+            }).open();
+            return;
+          }
+
+          const spinner = new Spinner({
+            text: 'Gemini APIを実行中...'
+          });
+          spinner.open();
+          try {
+            const body = {
+              contents: [
+                {
+                  parts: [
+                    {
+                      text: prompt
+                    }
+                  ]
+                }
+              ]
+            };
+            const response = await kintone.plugin.app.proxy(PLUGIN_ID, apiUrl, method, {}, body);
+            const [responseBody, status, headers] = response;
+
+            console.log('Status:', status);
+            console.log('Headers:', headers);
+            console.log('Body:', responseBody);
+
+            if (status === 200) {
+              const result = JSON.parse(responseBody);
+              const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || 'レスポンスがありませんでした';
+
+              // 出力フィールドに結果をセット
+              record.record[config.outputFieldCode].value = generatedText;
+              if (isMobile) {
+                kintone.mobile.app.record.set(record);
+              } else {
+                kintone.app.record.set(record);
+              }
+
+              new Notification({
+                text: 'Gemini APIの実行が完了しました',
+                type: 'success',
+                duration: 2000
+              }).open();
+            } else {
+              throw new Error(`Gemini APIエラー: ステータス ${status}`);
+            }
+
+            spinner.close();
+          } catch (err) {
+            console.error('err:', err);
+            spinner.close();
+            throw 'Gemini APIエラー: ' + err;
+          }
         } catch (err) {
           console.error('err:', err);
           new Notification({
-            text: 'Gemini APIの呼び出しに失敗しました',
+            text: 'エラーが発生しました。\n' + err,
             type: 'danger'
           }).open();
-          spinner.close();
         }
       });
       return event;

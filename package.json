@@ -1,6 +1,6 @@
 {
-  "name": "hazime_kintone_plugin_template",
-  "version": "1.2.0",
+  "name": "gemini_api_plugin_for_ktn",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "build:dev": "node script/build.js dev",
@@ -13,12 +13,11 @@
   },
   "keywords": [
     "kintone",
-    "plugin",
-    "template"
+    "plugin"
   ],
   "author": "NoriyukiKobori",
   "license": "MIT",
-  "description": "kintone plugin template with TypeScript and Vite",
+  "description": "kintone plugin for Gemini API integration with field-based prompt",
   "devDependencies": {
     "@kintone/dts-gen": "^9.0.0",
     "@types/node": "^24.5.2",
@@ -27,7 +26,6 @@
     "vite": "^7.1.7"
   },
   "dependencies": {
-    "kintone-ui-component": "^1.22.0",
-    "sweetalert2": "^11.26.17"
+    "kintone-ui-component": "^1.23.1"
   }
 }
